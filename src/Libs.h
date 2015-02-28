@@ -27,6 +27,12 @@
 #include <errno.h>
 #include <string.h>
 
+#include <commons/log.h>
+#include <commons/config.h>
+#include <commons/error.h>
+#include <commons/string.h>
+
+
 /*
  * conectar (ip, puerto)
  * Crea un socket y lo conecta
@@ -54,6 +60,17 @@ int recibir (int, char*, int);
  * Devuelve la cantidad de digitos + 1 si es negativo
  */
 int contarDigitos (int);
+
+/*
+ *leerConfig(path, propiedades, variables, cantidadDePropiedades)
+ *Lee el valor de las propiedades
+ *del cfg ubicado en el path
+ *y lo asigna en las variables
+ *
+ *Ej: leerConfig(/utnso/asd, {"ip","puerto"}, {&ip, &puerto}, 2);
+ */
+void leerConfig(char*, char* [], char** [], int);
+
 
 
 
