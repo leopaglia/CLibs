@@ -28,9 +28,9 @@
 #include <string.h>
 
 #include <commons/log.h>
-#include <commons/config.h>
 #include <commons/error.h>
 #include <commons/string.h>
+#include <commons/config.h>
 
 
 /*
@@ -71,8 +71,11 @@ int contarDigitos (int);
  */
 void leerConfig(char*, char* [], char** [], int);
 
-
-
+/*
+ *inicializarStrings(arrayDePunterosAStrings, cantidadDeElementosEnElArray)
+ *Inicializa todos los strings con string_new()
+ */
+void inicializarStrings(char** [], int);
 
 
 #endif /* SRC_LIBS_H_ */

@@ -74,6 +74,13 @@ int contarDigitos (int num) {
 }
 
 
+void inicializarStrings(char** arrayVars[], int cantVars){
+	int i = 0;
+	for(i = 0; i < cantVars; i++){
+		*arrayVars[i] = string_new();
+	}
+}
+
 void leerConfig(char* path, char* properties[], char** vars[], int cantProperties) {
 
 	t_config* config = config_create(path);
@@ -82,10 +89,12 @@ void leerConfig(char* path, char* properties[], char** vars[], int cantPropertie
 
 		int i;
 
-		for (i = 0; cantProperties >= i; i++){
+		for (i = 0; cantProperties > i; i++){
 			if(config_has_property(config, properties[i])){
-				*vars[i] = config_get_string_value(config, properties[i]);
-			} else error_show("No se pudo leer el parametro IP_KERNEL \n");
+
+				string_append(vars[i],config_get_string_value(config, properties[i]));
+
+			} else error_show("No se pudo leer el parametro %s \n", properties[i]);
 		}
 
 	} else {
@@ -96,8 +105,4 @@ void leerConfig(char* path, char* properties[], char** vars[], int cantPropertie
 	if(config != NULL)
 			free(config);
 
-}
-
-int main(){
-	return 1;
 }
