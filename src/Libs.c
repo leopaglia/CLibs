@@ -1,5 +1,42 @@
 #include "Libs.h"
 
+int crearListener (int puerto){
+
+	// AF_INET: Socket de internet IPv4
+	// SOCK_STREAM: Orientado a la conexion, TCP
+	// 0: Usar protocolo por defecto para AF_INET-SOCK_STREAM: Protocolo TCP/IPv4
+
+	//config
+	int queueMax = 10;
+	int optval = 1;
+
+	int listener; // descriptor de socket a la escucha
+
+	struct sockaddr_in socket_cliente;
+	socket_cliente.sin_family = AF_INET;
+	socket_cliente.sin_addr.s_addr = htons(INADDR_ANY );
+	socket_cliente.sin_port = htons(puerto);
+
+	// Crear el socket.
+	if((listener = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		error_show("Creacion socket listener");
+
+	// Hacer que el SO libere el puerto inmediatamente luego de cerrar el socket.
+	setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
+
+	// Vincular el socket con una direccion de red almacenada en 'socket_cliente'.
+	if (bind(listener, (struct sockaddr*) &socket_cliente, sizeof(socket_cliente)) != 0)
+		error_show("Bind socket listener");
+
+	// Escuchar nuevas conexiones entrantes.
+	if (listen(listener, queueMax) != 0)
+		error_show("Listen");
+
+	printf("Escuchando conexiones en puerto %d \n", puerto);
+
+	return listener;
+}
+
 int conectar (char* ip, char* puerto){
 
 	struct addrinfo hints;

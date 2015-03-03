@@ -1,48 +1,19 @@
 #include "Libs.h"
 
-
-// AF_INET: Socket de internet IPv4
-// SOCK_STREAM: Orientado a la conexion, TCP
-// 0: Usar protocolo por defecto para AF_INET-SOCK_STREAM: Protocolo TCP/IPv4
-
 int main(){
 
-	int puerto = 5455;
-
-	int listener; // descriptor de socket a la escucha
+	int listener = crearListener(5455);
 	int socketNuevaConexion; // descriptor de socket de nueva conexión aceptada
-	int optval = 1;
-
-	struct sockaddr_in socket_cliente;
-	socket_cliente.sin_family = AF_INET;
-	socket_cliente.sin_addr.s_addr = htons(INADDR_ANY );
-	socket_cliente.sin_port = htons(puerto);
-
-	// Crear el socket.
-	if((listener = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		error_show("Creacion socket listener");
-
-	// Hacer que el SO libere el puerto inmediatamente luego de cerrar el socket.
-	setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
-
-	// Vincular el socket con una direccion de red almacenada en 'socket_cliente'.
-	if (bind(listener, (struct sockaddr*) &socket_cliente, sizeof(socket_cliente)) != 0)
-		error_show("Bind socket listener");
-
-	printf("Escuchando conexiones en puerto %d \n", puerto);
-
-	// Escuchar nuevas conexiones entrantes.
-	if (listen(listener, 10) != 0)
-		error_show("Listen");
 
 	// Aceptar conexion entrante
 	if ((socketNuevaConexion = accept(listener, NULL, 0)) == -1)
 	 error_show("Accept");
 
 
+	char* buffer = malloc(4); //hasta tamaño 999
+	recibir(socketNuevaConexion, buffer, 4);
 
-	char* buffer = malloc(3); //hasta tamaño 99
-	recibir(socketNuevaConexion, buffer, 3);
+	printf("Listo para recibir mensaje de tamaño %d \n",atoi(buffer));
 
 	char* buffer2 = malloc(atoi(buffer));
 	recibir(socketNuevaConexion, buffer2, atoi(buffer));

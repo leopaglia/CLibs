@@ -32,6 +32,12 @@
 #include <commons/string.h>
 #include <commons/config.h>
 
+/*
+ * crearListener (puerto)
+ * Crea un socket listener (hay que hacer el accept de las conexiones)
+ * Devuelve el descriptor del socket
+ */
+int crearListener (int);
 
 /*
  * conectar (ip, puerto)

@@ -24,16 +24,21 @@ int main (){
 
 	leerConfig("/home/utnso/git/CLibs/src/config.cfg", propiedades, variables, 2);
 
-	printf("numero: %d, letra: %s \n", atoi(numero), letra);
-	printf("digitos del numero: %d \n", contarDigitos(atoi(numero)));
+	printf("Numero: %d, letra: %s \n", atoi(numero), letra);
+	printf("Digitos del numero: %d \n", contarDigitos(atoi(numero)));
 
 	int socketServer = conectar("127.0.0.1", "5455");
 
-	string_append(&mensaje, "hola server como te va");
+	string_append(&mensaje, "hola server como te va \n");
 	string_append(&handshake, string_itoa(strlen(mensaje)));
 
 	enviar(socketServer, handshake, strlen(handshake));
+
+	printf("Mensaje enviado: %s, tamano %d, largo %d \n", handshake, sizeof(handshake), strlen(handshake));
+
 	enviar(socketServer, mensaje, strlen(mensaje));
+
+	printf("Mensaje enviado: %s \n", mensaje);
 
 	return 0;
 }
