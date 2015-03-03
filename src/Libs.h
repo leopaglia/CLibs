@@ -35,14 +35,14 @@
 /*
  * crearListener (puerto)
  * Crea un socket listener (hay que hacer el accept de las conexiones)
- * Devuelve el descriptor del socket
+ * Devuelve el descriptor del socket creado
  */
 int crearListener (int);
 
 /*
  * conectar (ip, puerto)
- * Crea un socket y lo conecta
- * Devuelve el descriptor del socket
+ * Crea un socket y lo conecta a un listener
+ * Devuelve el descriptor del socket creado
  */
 int conectar (char*, char*);
 
