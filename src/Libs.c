@@ -19,18 +19,18 @@ int crearListener (int puerto){
 
 	// Crear el socket.
 	if((listener = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		error_show("Creacion socket listener");
+		exitError("Creacion socket listener");
 
 	// Hacer que el SO libere el puerto inmediatamente luego de cerrar el socket.
 	setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval));
 
 	// Vincular el socket con una direccion de red almacenada en 'socket_cliente'.
 	if (bind(listener, (struct sockaddr*) &socket_cliente, sizeof(socket_cliente)) != 0)
-		error_show("Bind socket listener");
+		exitError("Bind socket listener");
 
 	// Escuchar nuevas conexiones entrantes.
 	if (listen(listener, queueMax) != 0)
-		error_show("Listen");
+		exitError("Listen");
 
 	printf("Escuchando conexiones en puerto %d \n", puerto);
 
@@ -48,20 +48,14 @@ int conectar (char* ip, char* puerto){
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if(getaddrinfo(ip, puerto, &hints, &serverInfo) != 0 ){
-		error_show("getaddrinfo() \n");
-		exit(1);
-	}
+	if(getaddrinfo(ip, puerto, &hints, &serverInfo) != 0 )
+		exitError("getaddrinfo() \n");
 
-	if ((descriptor = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol)) < 0){
-		error_show("socket() \n");
-		exit(1);
-	}
+	if ((descriptor = socket(serverInfo->ai_family, serverInfo->ai_socktype, serverInfo->ai_protocol)) < 0)
+		exitError("socket() \n");
 
-	if(connect(descriptor, serverInfo->ai_addr, serverInfo->ai_addrlen) < 0 ){
-		error_show("connect() \n");
-		exit(1);
-	}
+	if(connect(descriptor, serverInfo->ai_addr, serverInfo->ai_addrlen) < 0 )
+		exitError("connect() \n");
 
 	freeaddrinfo(serverInfo);
 
@@ -135,8 +129,7 @@ void leerConfig(char* path, char* properties[], char** vars[], int cantPropertie
 		}
 
 	} else {
-		error_show("No se pudo abrir el archivo de configuracion \n");
-		exit(1);
+		exitError("No se pudo abrir el archivo de configuracion \n");
 	}
 
 	if(config != NULL)
@@ -144,69 +137,74 @@ void leerConfig(char* path, char* properties[], char** vars[], int cantPropertie
 
 }
 
-/*TODO
+void exitError(char* error){
+	error_show(error);
+	exit(1);
+}
 
- 	fd_set master, temp;
-	struct sockaddr_in myAddress;
-	struct sockaddr_in remoteAddress;
-	int maxSock;
 
-	FD_ZERO(master);
-	FD_ZERO(temp);
+t_struct_select inicializarSelect(int listener){
 
-	FD_SET(*sockListener, master);
-	*maxSock = *sockListener;
+	t_struct_select params;
+	params.buffer = string_new();
 
-	signed int getSocketChanged(fd_set *master, fd_set *temp, int *maxSock, int sockListener, struct sockaddr_in *remoteAddress, void *buf, int bufSize) {
+	FD_ZERO(&params.master);
+	FD_ZERO(&params.temp);
 
-		int addressLength;
-		int i;
-		int newSock;
-		int nBytes;
-		*temp = *master;
+	params.maxSock = listener;
 
-		//--Multiplexa conexiones
-		if (select(*maxSock + 1, temp, NULL, NULL, NULL ) == -1){
-			error_show("Select");
-			exit(1);
-		}
+	params.temp = params.master;
 
-		//--Cicla las conexiones para ver cual cambió
-		for (i = 0; i <= *maxSock; i++) {
-			//--Si el i° socket cambió
-			if (FD_ISSET(i, temp)) {
-				//--Si el que cambió es el listener
-				if (i == sockListener) {
-					addressLength = sizeof(*remoteAddress);
-					//--Gestiona nueva conexión
-					if((newSock = accept(sockListener, (struct sockaddr *) remoteAddress, (socklen_t *) &addressLength)) == -1)
-						error_show("Accept");
-					else {
-						//--Agrega el nuevo listener
-						FD_SET(newSock, master);
+	FD_SET(listener, &params.master);
 
-						if (newSock > *maxSock)
-							*maxSock = newSock;
-					}
-				} else {
-					//--Gestiona un cliente ya conectado
-					if ((nBytes = recibir(i, buf, bufSize)) <= 0) {
-						//--Si cerró la conexión o hubo error
-						if (nBytes == 0)
-							error_show("Fin de conexion del socket %d.", i);
-						else
-							error_show("Recv: %s", strerror(errno));
-						//--Cierra la conexión y lo saca de la lista
-						close(i);
-						FD_CLR(i, master);
-					} else {
-						return i;
-					}
-				}
+	return params;
+}
+
+
+int getSocketChanged(t_struct_select* params, int sockListener) {
+
+	//--Multiplexa conexiones
+	if (select(params->maxSock + 1, &params->temp, NULL, NULL, NULL ) == -1)
+		exitError("Select");
+
+	//--Cicla las conexiones para ver cual cambió
+	int i;
+	for (i = 0; i <= params->maxSock; i++) {
+		//--Si el i° socket cambió
+		if (!FD_ISSET(i, &params->temp))
+			continue;
+		//--Si el que cambió es el listener
+		if (i == sockListener) {
+			//--Gestiona nueva conexión
+			int socketNuevaConexion;
+			if((socketNuevaConexion = accept(socketNuevaConexion, NULL, 0)) == -1)
+				exitError("Accept");
+			else {
+				//--Agrega el nuevo listener
+				FD_SET(socketNuevaConexion, &params->master);
+
+				if (socketNuevaConexion > params->maxSock)
+					params->maxSock = socketNuevaConexion;
+			}
+		} else {
+			//--Gestiona un cliente ya conectado
+			int nBytes;
+			int bufferSize = sizeof(params->buffer);
+			if ((nBytes = recibir(i, params->buffer, bufferSize)) <= 0) {
+				//--Si cerró la conexión o hubo error
+				if (nBytes == 0)
+					printf("Fin de conexion del socket %d.", i);
+				else
+					error_show("Recv: %s", strerror(errno));
+				//--Cierra la conexión y lo saca de la lista
+				close(i);
+				FD_CLR(i, &params->master);
+			} else {
+				return i;
 			}
 		}
-
-		return -1;
 	}
 
-*/
+	return -1;
+}
+

@@ -32,6 +32,17 @@
 #include <commons/string.h>
 #include <commons/config.h>
 
+
+typedef struct{
+
+	fd_set master;
+	fd_set temp;
+	int maxSock;
+	char* buffer;
+
+}t_struct_select;
+
+
 /*
  * crearListener (puerto)
  * Crea un socket listener (hay que hacer el accept de las conexiones)
@@ -83,5 +94,25 @@ void leerConfig(char*, char* [], char** [], int);
  */
 void inicializarStrings(char** [], int);
 
+/*
+ *exitError(error)
+ *Imprime el error y termina el proceso
+ */
+void exitError(char*);
+
+/*
+ *inicializarSelect(listener)
+ *Inicializa datos para usar la funcion getSockChanged
+ *Devuelve t_struct_select
+ *Buffer = string_new()
+ */
+t_struct_select inicializarSelect(int);
+
+/*
+ *getSockChanged(structParametros, listener)
+ *Recibe puntero al struct de inicializarSelect y el mismo listener.
+ *Devuelve el socket que cambio y guarda el envio en structParametros.buffer
+ */
+int getSocketChanged(t_struct_select*, int);
 
 #endif /* SRC_LIBS_H_ */
