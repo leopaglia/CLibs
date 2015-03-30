@@ -143,25 +143,31 @@ void exitError(char* error){
 }
 
 
-t_struct_select inicializarSelect(int listener){
+t_struct_select inicializarSelect(int listener, int buffersize){
 
 	t_struct_select params;
-	params.buffer = string_new();
+
+	params.listener = listener;
+
+	params.buffer = malloc(buffersize);
+	params.buffersize = buffersize;
 
 	FD_ZERO(&params.master);
 	FD_ZERO(&params.temp);
 
 	params.maxSock = listener;
 
-	params.temp = params.master;
-
 	FD_SET(listener, &params.master);
+
+	params.temp = params.master;
 
 	return params;
 }
 
 
-int getSocketChanged(t_struct_select* params, int sockListener) {
+int getSocketChanged(t_struct_select* params) {
+
+	params->temp = params->master;
 
 	//--Multiplexa conexiones
 	if (select(params->maxSock + 1, &params->temp, NULL, NULL, NULL ) == -1)
@@ -170,14 +176,17 @@ int getSocketChanged(t_struct_select* params, int sockListener) {
 	//--Cicla las conexiones para ver cual cambió
 	int i;
 	for (i = 0; i <= params->maxSock; i++) {
-		//--Si el i° socket cambió
+
+		//--Si el i° socket no cambió
 		if (!FD_ISSET(i, &params->temp))
 			continue;
+
 		//--Si el que cambió es el listener
-		if (i == sockListener) {
+		if (i == params->listener) {
+
 			//--Gestiona nueva conexión
 			int socketNuevaConexion;
-			if((socketNuevaConexion = accept(socketNuevaConexion, NULL, 0)) == -1)
+			if((socketNuevaConexion = accept(params->listener, NULL, 0)) == -1)
 				exitError("Accept");
 			else {
 				//--Agrega el nuevo listener
@@ -185,15 +194,18 @@ int getSocketChanged(t_struct_select* params, int sockListener) {
 
 				if (socketNuevaConexion > params->maxSock)
 					params->maxSock = socketNuevaConexion;
+
+				printf("Nueva conexion, socket numero %d \n", socketNuevaConexion);
 			}
+
 		} else {
+
 			//--Gestiona un cliente ya conectado
 			int nBytes;
-			int bufferSize = sizeof(params->buffer);
-			if ((nBytes = recibir(i, params->buffer, bufferSize)) <= 0) {
+			if ((nBytes = recibir(i, params->buffer, params->buffersize)) <= 0) {
 				//--Si cerró la conexión o hubo error
 				if (nBytes == 0)
-					printf("Fin de conexion del socket %d.", i);
+					printf("Fin de conexion del socket %d. \n", i);
 				else
 					error_show("Recv: %s", strerror(errno));
 				//--Cierra la conexión y lo saca de la lista

@@ -37,8 +37,10 @@ typedef struct{
 
 	fd_set master;
 	fd_set temp;
+	int listener;
 	int maxSock;
 	char* buffer;
+	int buffersize;
 
 }t_struct_select;
 
@@ -101,18 +103,16 @@ void inicializarStrings(char** [], int);
 void exitError(char*);
 
 /*
- *inicializarSelect(listener)
+ *inicializarSelect(listener, buffersize)
  *Inicializa datos para usar la funcion getSockChanged
- *Devuelve t_struct_select
- *Buffer = string_new()
  */
-t_struct_select inicializarSelect(int);
+t_struct_select inicializarSelect(int, int);
 
 /*
- *getSockChanged(structParametros, listener)
- *Recibe puntero al struct de inicializarSelect y el mismo listener.
+ *getSockChanged(structParametros)
+ *Recibe puntero al struct de inicializarSelect.
  *Devuelve el socket que cambio y guarda el envio en structParametros.buffer
  */
-int getSocketChanged(t_struct_select*, int);
+int getSocketChanged(t_struct_select*);
 
 #endif /* SRC_LIBS_H_ */
