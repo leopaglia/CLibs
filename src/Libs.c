@@ -2,9 +2,6 @@
 
 int crearListener (int puerto){
 
-	// AF_INET: Socket de internet IPv4
-	// SOCK_STREAM: Orientado a la conexion, TCP
-	// 0: Usar protocolo por defecto para AF_INET-SOCK_STREAM: Protocolo TCP/IPv4
 
 	//config
 	int queueMax = 10;
@@ -18,6 +15,10 @@ int crearListener (int puerto){
 	socket_cliente.sin_port = htons(puerto);
 
 	// Crear el socket.
+
+	// AF_INET: Socket de internet IPv4
+	// SOCK_STREAM: Orientado a la conexion, TCP
+	// 0: Usar protocolo por defecto para AF_INET-SOCK_STREAM: Protocolo TCP/IPv4
 	if((listener = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		exitError("Creacion socket listener");
 
